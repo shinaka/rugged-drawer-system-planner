@@ -129,7 +129,7 @@ function Scene({ controlsRef }: { controlsRef: React.RefObject<OrbitControlsImpl
 
       {/* Placed drawers */}
       {placements.map(p => (
-        <PlacedItem key={p.id} placement={p} />
+        <PlacedItem key={p.id} placement={p} orbitRef={controlsRef} />
       ))}
 
       {/* Ghost preview */}

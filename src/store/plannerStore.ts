@@ -42,6 +42,12 @@ export const usePlannerStore = create<PlannerState>((set, get) => ({
     })
   },
 
+  movePlacement: (id: string, position: [number, number, number]) => {
+    const { placements, history, historyIndex } = get()
+    const newPlacements = placements.map(p => p.id === id ? { ...p, position } : p)
+    set({ placements: newPlacements, ...pushHistory(history, historyIndex, newPlacements) })
+  },
+
   removePlacement: (id: string) => {
     const { placements, history, historyIndex } = get()
     const newPlacements = placements.filter(p => p.id !== id)

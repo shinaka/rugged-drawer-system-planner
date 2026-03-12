@@ -84,7 +84,8 @@ export default function Toolbar({ onResetCamera }: Props) {
                 <div className={styles.controlsSection}>
                   <div className={styles.sectionTitle}>Selection</div>
                   <Row k="Click placed item" v="Select" />
-                  <Row k="Click again / G" v="Grab to move" />
+                  <Row k="Drag gizmo arrow" v="Move (snaps to grid / stack)" />
+                  <Row k="R" v="Rotate selected" />
                   <Row k="Delete / Backspace" v="Remove selected" />
                 </div>
 

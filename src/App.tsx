@@ -148,9 +148,8 @@ export default function App() {
               <div className={styles.bannerPillSelected}>
                 Selected ·{' '}
                 <span className="text-slate-300 text-xs">
+                  drag gizmo to move ·{' '}
                   <kbd className={styles.kbd}>R</kbd> rotate ·{' '}
-                  <kbd className={styles.kbd}>G</kbd> move ·{' '}
-                  click again to grab ·{' '}
                   <kbd className={styles.kbd}>Del</kbd> delete
                 </span>
               </div>

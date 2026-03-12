@@ -30,6 +30,7 @@ export interface PlannerState {
   historyIndex: number
 
   addPlacement: (profile: DrawerProfile, position: [number, number, number]) => void
+  movePlacement: (id: string, position: [number, number, number]) => void
   removePlacement: (id: string) => void
   selectPlacement: (id: string | null) => void
   rotateSelected: () => void
