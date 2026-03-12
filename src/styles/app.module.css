@@ -7,19 +7,29 @@
 }
 
 .sidebarLeft {
-  @apply w-60 flex-shrink-0 border-r border-slate-700 flex flex-col bg-slate-900 overflow-hidden;
+  @apply flex-shrink-0 border-r border-slate-700 flex flex-col bg-slate-900 overflow-hidden;
 }
 
 .sidebarRight {
-  @apply w-56 flex-shrink-0 border-l border-slate-700 flex flex-col bg-slate-900 overflow-hidden;
+  @apply flex-shrink-0 border-l border-slate-700 flex flex-col bg-slate-900 overflow-hidden;
+}
+
+.resizeHandle {
+  @apply w-1 flex-shrink-0 cursor-col-resize bg-transparent hover:bg-blue-500/40 transition-colors duration-100;
+  z-index: 10;
+}
+
+.resizeHandle:active,
+.resizeHandleDragging {
+  @apply bg-blue-500/60;
 }
 
 .viewport {
-  @apply flex-1 relative;
+  @apply flex-1 min-w-0 relative;
 }
 
 .footer {
-  @apply flex-shrink-0 border-t border-slate-800 py-1.5 pr-3 text-right text-[11px] text-slate-600;
+  @apply flex-shrink-0 border-t border-slate-800 px-3 py-1.5 flex items-center justify-between text-[11px] text-slate-600;
 }
 
 .footerLink {

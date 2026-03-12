@@ -1,4 +1,5 @@
-import { useRef, useEffect, useCallback } from 'react'
+import { useRef, useEffect, useCallback, useState } from 'react'
+import { version } from '../package.json'
 import Toolbar from './components/ui/Toolbar'
 import CatalogPanel from './components/ui/CatalogPanel'
 import PartsListPanel from './components/ui/PartsListPanel'
@@ -8,6 +9,30 @@ import { usePlannerStore } from './store/plannerStore'
 import styles from './styles/app.module.css'
 
 export default function App() {
+  const [leftWidth, setLeftWidth] = useState(240)
+  const [rightWidth, setRightWidth] = useState(224)
+  const dragRef = useRef<{ side: 'left' | 'right'; startX: number; startWidth: number } | null>(null)
+
+  useEffect(() => {
+    function onMouseMove(e: MouseEvent) {
+      if (!dragRef.current) return
+      const { side, startX, startWidth } = dragRef.current
+      const delta = e.clientX - startX
+      if (side === 'left') {
+        setLeftWidth(Math.min(480, Math.max(140, startWidth + delta)))
+      } else {
+        setRightWidth(Math.min(480, Math.max(140, startWidth - delta)))
+      }
+    }
+    function onMouseUp() { dragRef.current = null }
+    window.addEventListener('mousemove', onMouseMove)
+    window.addEventListener('mouseup', onMouseUp)
+    return () => {
+      window.removeEventListener('mousemove', onMouseMove)
+      window.removeEventListener('mouseup', onMouseUp)
+    }
+  }, [])
+
   const viewportRef = useRef<ViewportHandle>(null)
   const heldItem = usePlannerStore(s => s.heldItem)
   const movingId = usePlannerStore(s => s.movingId)
@@ -75,11 +100,16 @@ export default function App() {
       <Toolbar onResetCamera={handleResetCamera} />
 
       <div className={styles.body}>
-        <div className={styles.sidebarLeft}>
+        <div className={styles.sidebarLeft} style={{ width: leftWidth }}>
           <div className="flex-1 min-h-0 overflow-hidden">
             <CatalogPanel />
           </div>
         </div>
+
+        <div
+          className={styles.resizeHandle}
+          onMouseDown={e => { e.preventDefault(); dragRef.current = { side: 'left', startX: e.clientX, startWidth: leftWidth } }}
+        />
 
         <div
           className={styles.viewport}
@@ -115,21 +145,39 @@ export default function App() {
           )}
         </div>
 
-        <div className={styles.sidebarRight}>
+        <div
+          className={styles.resizeHandle}
+          onMouseDown={e => { e.preventDefault(); dragRef.current = { side: 'right', startX: e.clientX, startWidth: rightWidth } }}
+        />
+
+        <div className={styles.sidebarRight} style={{ width: rightWidth }}>
           <PartsListPanel />
         </div>
       </div>
 
       <div className={styles.footer}>
-        v1.0 · built by{' '}
-        <a
-          href="https://makerworld.com/en/@shinaka"
-          target="_blank"
-          rel="noopener noreferrer"
-          className={styles.footerLink}
-        >
-          shinaka
-        </a>
+        <span>
+          v{version} · built by{' '}
+          <a
+            href="https://makerworld.com/en/@shinaka"
+            target="_blank"
+            rel="noopener noreferrer"
+            className={styles.footerLink}
+          >
+            shinaka
+          </a>
+        </span>
+        <span>
+          Rugged Drawer System by{' '}
+          <a
+            href="https://makerworld.com/en/@K2_Kevin"
+            target="_blank"
+            rel="noopener noreferrer"
+            className={styles.footerLink}
+          >
+            K2_Kevin
+          </a>
+        </span>
       </div>
     </div>
   )

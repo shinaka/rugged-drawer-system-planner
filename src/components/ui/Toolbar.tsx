@@ -24,7 +24,7 @@ export default function Toolbar({ onResetCamera }: Props) {
 
   return (
     <div className={styles.toolbar}>
-      <span className={styles.title}>Rugged Drawer Planner</span>
+      <span className={styles.title}>Rugged Drawer System Planner</span>
 
       <div className={styles.divider} />
 

@@ -85,8 +85,9 @@ export default function PartsListPanel() {
                   target="_blank"
                   rel="noopener noreferrer"
                   className={styles.makerLink}
+                  title="Clicking this link will select the correct Print Profile on MakerWorld. You may need to expand the profile list on the page to see it selected."
                 >
-                  MakerWorld
+                  Print Profile
                 </a>
               </div>
             </div>
