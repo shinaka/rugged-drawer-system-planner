@@ -9,8 +9,12 @@ import { usePlannerStore } from './store/plannerStore'
 import styles from './styles/app.module.css'
 
 export default function App() {
-  const [leftWidth, setLeftWidth] = useState(240)
-  const [rightWidth, setRightWidth] = useState(224)
+  const [leftWidth, setLeftWidth] = useState(() =>
+    Number(localStorage.getItem('sidebar-left-width')) || 240
+  )
+  const [rightWidth, setRightWidth] = useState(() =>
+    Number(localStorage.getItem('sidebar-right-width')) || 224
+  )
   const dragRef = useRef<{ side: 'left' | 'right'; startX: number; startWidth: number } | null>(null)
 
   useEffect(() => {
@@ -24,7 +28,16 @@ export default function App() {
         setRightWidth(Math.min(480, Math.max(140, startWidth - delta)))
       }
     }
-    function onMouseUp() { dragRef.current = null }
+    function onMouseUp() {
+      if (dragRef.current) {
+        if (dragRef.current.side === 'left') {
+          setLeftWidth(w => { localStorage.setItem('sidebar-left-width', String(w)); return w })
+        } else {
+          setRightWidth(w => { localStorage.setItem('sidebar-right-width', String(w)); return w })
+        }
+      }
+      dragRef.current = null
+    }
     window.addEventListener('mousemove', onMouseMove)
     window.addEventListener('mouseup', onMouseUp)
     return () => {

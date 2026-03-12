@@ -143,7 +143,7 @@ function Scene({ controlsRef }: { controlsRef: React.RefObject<OrbitControlsImpl
         maxDistance={3000}
         mouseButtons={{
           LEFT: heldItem ? undefined : THREE.MOUSE.ROTATE,
-          MIDDLE: THREE.MOUSE.DOLLY,
+          MIDDLE: THREE.MOUSE.PAN,
           RIGHT: THREE.MOUSE.PAN,
         }}
       />
