@@ -1,4 +1,4 @@
-import { useRef, useState, useLayoutEffect } from 'react'
+import { useRef, useState, useLayoutEffect, useEffect } from 'react'
 import { TransformControls } from '@react-three/drei'
 import type { TransformControls as TransformControlsImpl } from 'three-stdlib'
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib'
@@ -12,6 +12,7 @@ import type { Placement } from '../../types'
 interface Props {
   placement: Placement
   orbitRef: React.RefObject<OrbitControlsImpl>
+  gizmoDraggingRef: React.MutableRefObject<boolean>
 }
 
 function effectiveDims(gridW: number, gridD: number, rotation: 0 | 90 | 180 | 270): [number, number] {
@@ -20,7 +21,7 @@ function effectiveDims(gridW: number, gridD: number, rotation: 0 | 90 | 180 | 27
     : [gridW * GRID_UNIT, gridD * GRID_UNIT]
 }
 
-export default function PlacedItem({ placement, orbitRef }: Props) {
+export default function PlacedItem({ placement, orbitRef, gizmoDraggingRef }: Props) {
   const selectedId = usePlannerStore(s => s.selectedId)
   const heldItem = usePlannerStore(s => s.heldItem)
   const selectPlacement = usePlannerStore(s => s.selectPlacement)
@@ -36,27 +37,42 @@ export default function PlacedItem({ placement, orbitRef }: Props) {
   const [isDragging, setIsDragging] = useState(false)
   const [dragValid, setDragValid] = useState(true)
 
+  // workingPos: non-null when item was dropped at an invalid position (red ghost, still selected)
+  const [workingPos, setWorkingPos] = useState<[number, number, number] | null>(null)
+  const [workingValid] = useState(false)
+
   // Refs for values read inside event callbacks — avoids stale closures
   const dragValidRef = useRef(true)
   const dragSnappedPosRef = useRef<[number, number, number]>([...placement.position])
-  const justDraggedRef = useRef(false)
 
-  // Keep the THREE.Group position in sync with placement.position when not dragging
+  // Keep the THREE.Group position in sync with placement.position (or workingPos) when not dragging
   const [px, py, pz] = placement.position
   useLayoutEffect(() => {
     if (!groupRef.current || isDragging) return
-    groupRef.current.position.set(px, py, pz)
-  }, [px, py, pz, isDragging])
+    const [wx, wy, wz] = workingPos ?? placement.position
+    groupRef.current.position.set(wx, wy, wz)
+  }, [px, py, pz, isDragging, workingPos])
+
+  // When deselected while holding an invalid workingPos, revert to committed position
+  useEffect(() => {
+    if (!isSelected && workingPos !== null) {
+      setWorkingPos(null)
+      if (groupRef.current) {
+        groupRef.current.position.set(px, py, pz)
+      }
+    }
+  }, [isSelected])
 
   function handleClick() {
     if (heldItem) return
-    // Swallow the synthetic click that fires after a drag release
-    if (justDraggedRef.current) { justDraggedRef.current = false; return }
+    if (gizmoDraggingRef.current) return
     selectPlacement(isSelected ? null : placement.id)
   }
 
   function handleDragStart() {
     setIsDragging(true)
+    setWorkingPos(null)
+    gizmoDraggingRef.current = true
     if (orbitRef.current) orbitRef.current.enabled = false
   }
 
@@ -113,8 +129,10 @@ export default function PlacedItem({ placement, orbitRef }: Props) {
 
   function handleDragEnd() {
     setIsDragging(false)
-    justDraggedRef.current = true
     if (orbitRef.current) orbitRef.current.enabled = true
+
+    // Delay clearing gizmoDraggingRef so ground click handler fires first
+    setTimeout(() => { gizmoDraggingRef.current = false }, 50)
 
     const snapped = dragSnappedPosRef.current
     const [ox, oy, oz] = placement.position
@@ -125,10 +143,16 @@ export default function PlacedItem({ placement, orbitRef }: Props) {
 
     if (dragValidRef.current && moved) {
       movePlacement(placement.id, snapped)
-    } else if (groupRef.current) {
-      groupRef.current.position.set(ox, oy, oz)
+      setWorkingPos(null)
+    } else if (!dragValidRef.current) {
+      setWorkingPos(snapped)
+    } else {
+      if (groupRef.current) groupRef.current.position.set(ox, oy, oz)
     }
   }
+
+  const showAsGhost = isDragging || workingPos !== null
+  const ghostValid = isDragging ? dragValid : workingValid
 
   return (
     <>
@@ -137,9 +161,9 @@ export default function PlacedItem({ placement, orbitRef }: Props) {
           profile={profile}
           position={[0, 0, 0]}
           rotation={placement.rotation}
-          selected={isSelected && !isDragging}
-          ghost={isDragging}
-          valid={dragValid}
+          selected={isSelected && !isDragging && workingPos === null}
+          ghost={showAsGhost}
+          valid={ghostValid}
           onClick={handleClick}
         />
       </group>

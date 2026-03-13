@@ -22,6 +22,7 @@ function Scene({ controlsRef }: { controlsRef: React.RefObject<OrbitControlsImpl
   const raycaster = useRef(new THREE.Raycaster())
   const groundPlane = useRef(new THREE.Plane(new THREE.Vector3(0, 1, 0), -GROUND_Y))
   const planeHit = useRef(new THREE.Vector3())
+  const gizmoDraggingRef = useRef(false)
 
   const heldItem = usePlannerStore(s => s.heldItem)
   const addPlacement = usePlannerStore(s => s.addPlacement)
@@ -89,6 +90,7 @@ function Scene({ controlsRef }: { controlsRef: React.RefObject<OrbitControlsImpl
   // click on empty ground to deselect
   function handleGroundClick(e: THREE.Event) {
     if (heldItem) return
+    if (gizmoDraggingRef.current) return
     // @ts-expect-error stopPropagation exists on R3F events
     e.stopPropagation?.()
     selectPlacement(null)
@@ -129,7 +131,7 @@ function Scene({ controlsRef }: { controlsRef: React.RefObject<OrbitControlsImpl
 
       {/* Placed drawers */}
       {placements.map(p => (
-        <PlacedItem key={p.id} placement={p} orbitRef={controlsRef} />
+        <PlacedItem key={p.id} placement={p} orbitRef={controlsRef} gizmoDraggingRef={gizmoDraggingRef} />
       ))}
 
       {/* Ghost preview */}
