@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { usePlannerStore } from '../../store/plannerStore'
 import HelpModal from './HelpModal'
+import ChangelogModal from './ChangelogModal'
 import styles from './Toolbar.module.css'
 
 interface Props {
@@ -9,6 +10,7 @@ interface Props {
 
 export default function Toolbar({ onResetCamera }: Props) {
   const [helpOpen, setHelpOpen] = useState(false)
+  const [changelogOpen, setChangelogOpen] = useState(false)
   const undo = usePlannerStore(s => s.undo)
   const redo = usePlannerStore(s => s.redo)
   const clearAll = usePlannerStore(s => s.clearAll)
@@ -56,6 +58,9 @@ export default function Toolbar({ onResetCamera }: Props) {
         <ToolbarBtn onClick={() => setHelpOpen(true)} title="Help">
           ? Help
         </ToolbarBtn>
+        <ToolbarBtn onClick={() => setChangelogOpen(true)} title="Changelog">
+          ◷ Changelog
+        </ToolbarBtn>
 
         <div className={styles.spacer} />
 
@@ -65,6 +70,7 @@ export default function Toolbar({ onResetCamera }: Props) {
       </div>
 
       {helpOpen && <HelpModal onClose={() => setHelpOpen(false)} />}
+      {changelogOpen && <ChangelogModal onClose={() => setChangelogOpen(false)} />}
     </>
   )
 }
