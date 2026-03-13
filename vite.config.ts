@@ -18,6 +18,7 @@ function buildChangelog(): ChangelogEntry[] {
       const range = prevTag ? `${prevTag}..${tag}` : tag
       const commits = execSync(`git log ${range} --pretty=format:"%s"`)
         .toString().trim().split('\n').filter(Boolean)
+        .filter(c => !/^v?\d+\.\d+\.\d+$/.test(c))
       return { version: tag, commits }
     }).reverse() // newest first
   } catch {
