@@ -136,7 +136,6 @@ export default function App() {
                 {isMoving ? 'Moving' : 'Placing'}: <strong>{heldItem.name}</strong>
                 <span className="ml-2 text-slate-400 text-xs">
                   · Click to place ·{' '}
-                  {isMoving && <>Shift+Click to duplicate · </>}
                   <kbd className={styles.kbd}>R</kbd> rotate ·{' '}
                   <kbd className={styles.kbd}>Esc</kbd> cancel
                 </span>

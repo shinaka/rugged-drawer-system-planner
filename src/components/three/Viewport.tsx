@@ -23,17 +23,15 @@ function Scene({ controlsRef }: { controlsRef: React.RefObject<OrbitControlsImpl
   const groundPlane = useRef(new THREE.Plane(new THREE.Vector3(0, 1, 0), -GROUND_Y))
   const planeHit = useRef(new THREE.Vector3())
   const gizmoDraggingRef = useRef(false)
+  const pointerDownInCanvas = useRef(false)
 
   const heldItem = usePlannerStore(s => s.heldItem)
   const addPlacement = usePlannerStore(s => s.addPlacement)
-  const duplicatePlacement = usePlannerStore(s => s.duplicatePlacement)
   const selectPlacement = usePlannerStore(s => s.selectPlacement)
   const setGhostPosition = usePlannerStore(s => s.setGhostPosition)
   const setGhostValid = usePlannerStore(s => s.setGhostValid)
   const ghostPosition = usePlannerStore(s => s.ghostPosition)
   const ghostValid = usePlannerStore(s => s.ghostValid)
-  const ghostRotation = usePlannerStore(s => s.ghostRotation)
-  const movingId = usePlannerStore(s => s.movingId)
   const placements = usePlannerStore(s => s.placements)
 
   const getSnappedPosition = useSnapPosition()
@@ -67,32 +65,42 @@ function Scene({ controlsRef }: { controlsRef: React.RefObject<OrbitControlsImpl
     updateGhostFromPointer(event)
   }, [updateGhostFromPointer])
 
-  const handleClick = useCallback((e: MouseEvent) => {
+  const handleClick = useCallback((_e: MouseEvent) => {
     if (!heldItem) return
     if (ghostPosition && ghostValid) {
-      if (e.shiftKey && movingId) {
-        duplicatePlacement(movingId, ghostPosition, ghostRotation)
-      } else {
-        addPlacement(heldItem, ghostPosition)
-      }
+      addPlacement(heldItem, ghostPosition)
     }
-  }, [heldItem, ghostPosition, ghostValid, addPlacement, duplicatePlacement, movingId, ghostRotation])
+  }, [heldItem, ghostPosition, ghostValid, addPlacement])
 
   const handlePointerLeave = useCallback(() => {
     setGhostPosition(null)
   }, [setGhostPosition])
 
+  // Place on pointerup only when the drag originated OUTSIDE the canvas (sidebar drag).
+  // When the drag starts inside the canvas, 'click' fires and handles placement instead.
+  const handlePointerUp = useCallback((e: PointerEvent) => {
+    void e
+    const fromCanvas = pointerDownInCanvas.current
+    pointerDownInCanvas.current = false
+    if (fromCanvas) return
+    if (!heldItem || !ghostPosition || !ghostValid) return
+    addPlacement(heldItem, ghostPosition)
+  }, [heldItem, ghostPosition, ghostValid, addPlacement])
+
   useEffect(() => {
     const el = gl.domElement
+    el.addEventListener('pointerdown', () => { pointerDownInCanvas.current = true })
     el.addEventListener('pointermove', handlePointerMove)
+    el.addEventListener('pointerup', handlePointerUp)
     el.addEventListener('click', handleClick)
     el.addEventListener('pointerleave', handlePointerLeave)
     return () => {
       el.removeEventListener('pointermove', handlePointerMove)
+      el.removeEventListener('pointerup', handlePointerUp)
       el.removeEventListener('click', handleClick)
       el.removeEventListener('pointerleave', handlePointerLeave)
     }
-  }, [handlePointerMove, handleClick, handlePointerLeave, gl.domElement])
+  }, [handlePointerMove, handlePointerUp, handleClick, handlePointerLeave, gl.domElement])
 
   // click on empty ground to deselect
   function handleGroundClick(e: THREE.Event) {

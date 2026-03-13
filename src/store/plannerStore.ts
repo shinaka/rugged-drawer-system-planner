@@ -22,6 +22,7 @@ export const usePlannerStore = create<PlannerState>((set, get) => ({
   ghostRotation: 0,
   ghostValid: true,
   movingId: null,
+  pendingCloneId: null,
   history: [[]],
   historyIndex: 0,
 
@@ -48,28 +49,41 @@ export const usePlannerStore = create<PlannerState>((set, get) => ({
     set({ placements: newPlacements, ...pushHistory(history, historyIndex, newPlacements) })
   },
 
-  duplicatePlacement: (id: string, position: [number, number, number], rotation: 0 | 90 | 180 | 270) => {
+  // Silently inserts a copy at the same position/rotation — used by gizmo shift-drag.
+  // Also marks the new copy as pending so it renders as a ghost until confirmed.
+  clonePlacement: (id: string, newId: string) => {
     const { placements, history, historyIndex } = get()
     const original = placements.find(p => p.id === id)
     if (!original) return
-    const newPlacement: Placement = { ...original, id: uuidv4(), position, rotation }
-    const newPlacements = [...placements, newPlacement]
-    set({
-      placements: newPlacements,
-      ...pushHistory(history, historyIndex, newPlacements),
-      selectedId: newPlacement.id,
-      heldItem: null,
-      ghostPosition: null,
-      ghostRotation: 0,
-      movingId: null,
-    })
+    const copy = { ...original, id: newId }
+    const newPlacements = [...placements, copy]
+    set({ placements: newPlacements, ...pushHistory(history, historyIndex, newPlacements), pendingCloneId: newId })
   },
 
   removePlacement: (id: string) => {
-    const { placements, history, historyIndex } = get()
+    const { placements, history, historyIndex, pendingCloneId } = get()
     const newPlacements = placements.filter(p => p.id !== id)
-    set({ placements: newPlacements, ...pushHistory(history, historyIndex, newPlacements), selectedId: null })
+    set({
+      placements: newPlacements,
+      ...pushHistory(history, historyIndex, newPlacements),
+      selectedId: null,
+      ...(pendingCloneId === id ? { pendingCloneId: null } : {}),
+    })
   },
+
+  // Like removePlacement but does NOT clear selectedId — used when cleaning up
+  // shift-drag copies so we don't accidentally deselect a newly-clicked item.
+  discardPlacement: (id: string) => {
+    const { placements, history, historyIndex, pendingCloneId } = get()
+    const newPlacements = placements.filter(p => p.id !== id)
+    set({
+      placements: newPlacements,
+      ...pushHistory(history, historyIndex, newPlacements),
+      ...(pendingCloneId === id ? { pendingCloneId: null } : {}),
+    })
+  },
+
+  setPendingCloneId: (id: string | null) => set({ pendingCloneId: id }),
 
   selectPlacement: (id: string | null) => set({ selectedId: id }),
 
@@ -109,20 +123,20 @@ export const usePlannerStore = create<PlannerState>((set, get) => ({
   undo: () => {
     const { history, historyIndex } = get()
     if (historyIndex <= 0) return
-    set({ placements: history[historyIndex - 1] ?? [], historyIndex: historyIndex - 1, selectedId: null })
+    set({ placements: history[historyIndex - 1] ?? [], historyIndex: historyIndex - 1, selectedId: null, pendingCloneId: null })
   },
 
   redo: () => {
     const { history, historyIndex } = get()
     if (historyIndex >= history.length - 1) return
-    set({ placements: history[historyIndex + 1] ?? [], historyIndex: historyIndex + 1, selectedId: null })
+    set({ placements: history[historyIndex + 1] ?? [], historyIndex: historyIndex + 1, selectedId: null, pendingCloneId: null })
   },
 
   loadLayout: (placements: Placement[]) => {
     const { history, historyIndex } = get()
     set({
       placements,
-      selectedId: null, heldItem: null, ghostPosition: null, ghostRotation: 0, movingId: null,
+      selectedId: null, heldItem: null, ghostPosition: null, ghostRotation: 0, movingId: null, pendingCloneId: null,
       ...pushHistory(history, historyIndex, placements),
     })
   },
@@ -130,7 +144,7 @@ export const usePlannerStore = create<PlannerState>((set, get) => ({
   clearAll: () => {
     const { history, historyIndex } = get()
     set({
-      placements: [], selectedId: null, heldItem: null, ghostPosition: null, ghostRotation: 0, movingId: null,
+      placements: [], selectedId: null, heldItem: null, ghostPosition: null, ghostRotation: 0, movingId: null, pendingCloneId: null,
       ...pushHistory(history, historyIndex, []),
     })
   },

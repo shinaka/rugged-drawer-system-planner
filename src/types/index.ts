@@ -26,13 +26,16 @@ export interface PlannerState {
   ghostRotation: 0 | 90 | 180 | 270 // rotation of the ghost preview
   ghostValid: boolean
   movingId: string | null // ID of a placed item being repositioned
+  pendingCloneId: string | null // ID of a shift-drag clone that isn't confirmed yet
   history: Placement[][]
   historyIndex: number
 
   addPlacement: (profile: DrawerProfile, position: [number, number, number]) => void
   movePlacement: (id: string, position: [number, number, number]) => void
-  duplicatePlacement: (id: string, position: [number, number, number], rotation: 0 | 90 | 180 | 270) => void
+  clonePlacement: (id: string, newId: string) => void
   removePlacement: (id: string) => void
+  discardPlacement: (id: string) => void
+  setPendingCloneId: (id: string | null) => void
   selectPlacement: (id: string | null) => void
   rotateSelected: () => void
   rotateGhost: () => void

@@ -29,7 +29,6 @@ export default function HelpModal({ onClose }: Props) {
               <Row k="G" v="Pick up selected item to move" />
               <Row k="Drag gizmo arrow" v="Move (snaps to grid / stack)" />
               <Row k="Shift + drag gizmo" v="Duplicate (instead of move)" />
-              <Row k="Shift + click to place" v="Duplicate (while using G)" />
               <Row k="R" v="Rotate selected" />
               <Row k="Delete / Backspace" v="Remove selected" />
             </div>

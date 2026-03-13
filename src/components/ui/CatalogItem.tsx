@@ -17,8 +17,29 @@ export default function CatalogItem({ profile }: Props) {
   const heldItem = usePlannerStore(s => s.heldItem)
   const isHeld = heldItem?.id === profile.id
 
+  function handleMouseDown(e: React.MouseEvent) {
+    const startX = e.clientX
+    const startY = e.clientY
+
+    function onMove(e: MouseEvent) {
+      const dx = e.clientX - startX
+      const dy = e.clientY - startY
+      if (dx * dx + dy * dy > 25) {
+        setHeldItem(profile)
+        window.removeEventListener('mousemove', onMove)
+      }
+    }
+    function onUp() {
+      window.removeEventListener('mousemove', onMove)
+      window.removeEventListener('mouseup', onUp)
+    }
+    window.addEventListener('mousemove', onMove)
+    window.addEventListener('mouseup', onUp)
+  }
+
   return (
     <button
+      onMouseDown={handleMouseDown}
       onClick={() => setHeldItem(isHeld ? null : profile)}
       className={`${styles.item} ${isHeld ? styles.itemHeld : ''}`}
     >
