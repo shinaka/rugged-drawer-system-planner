@@ -9,7 +9,7 @@ import type { DrawerProfile } from '../types'
 //     .props.pageProps.design.instances.map(i => ({ id: i.id, title: i.title }))
 
 const H1_MM = 42   // standard height
-const H2_MM = 76   // double high height
+const H2_MM = 84   // double high height (2 × 42mm Gridfinity units)
 
 const COMPAT = ['X1C', 'P1S', 'H2x', 'A1']
 
