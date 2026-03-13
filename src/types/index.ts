@@ -9,6 +9,7 @@ export interface DrawerProfile {
   makerWorldProfileId?: string
   category: 'standard' | 'divided' | 'custom' | 'baseplate' | 'tray'
   color: string // display color in 3D view
+  filamentGrams?: number // estimated filament at Bambu 0.20mm standard profile
 }
 
 export interface Placement {
@@ -18,8 +19,14 @@ export interface Placement {
   rotation: 0 | 90 | 180 | 270 // Y-axis rotation in degrees
 }
 
+export interface FilamentEntry {
+  grams: number
+  hours: number
+}
+
 export interface PlannerState {
   placements: Placement[]
+  filamentData: Record<string, FilamentEntry> // fetched from Google Sheet
   selectedId: string | null
   heldItem: DrawerProfile | null
   ghostPosition: [number, number, number] | null
@@ -43,6 +50,7 @@ export interface PlannerState {
   setHeldItem: (item: DrawerProfile | null) => void
   setGhostPosition: (pos: [number, number, number] | null) => void
   setGhostValid: (valid: boolean) => void
+  setFilamentData: (data: Record<string, FilamentEntry>) => void
   loadLayout: (placements: Placement[]) => void
   undo: () => void
   redo: () => void

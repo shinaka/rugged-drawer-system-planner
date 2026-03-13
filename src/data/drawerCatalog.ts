@@ -91,6 +91,86 @@ const PROFILE_IDS: Record<string, number> = {
   'baseplate_6x6': 755201,
 }
 
+// Filament estimates at Bambu 0.20mm standard profile (grams)
+// Fill in values as you slice each model. Missing entries are omitted from the UI.
+const FILAMENT_GRAMS: Record<string, number> = {
+  // H1 Standard — fill in as sliced
+  // '2x2_h1': 0,
+  // '2x3_h1': 0,
+  // '2x4_h1': 0,
+  // '2x5_h1': 0,
+  // '3x1_h1': 0,
+  // '3x2_h1': 0,
+  // '3x3_h1': 0,
+  // '3x5_h1': 0,
+  // '3x6_h1': 0,
+  // '4x1_h1': 0,
+  // '4x2_h1': 0,
+  // '4x3_h1': 0,
+  // '4x5_h1': 0,
+  // '4x6_h1': 0,
+  // '5x1_h1': 0,
+  // '5x2_h1': 0,
+  // '5x3_h1': 0,
+  // '5x4_h1': 0,
+  // '5x5_h1': 0,
+  // '5x6_h1': 0,
+  // '6x1_h1': 0,
+  // '6x2_h1': 0,
+  // '6x3_h1': 0,
+  // '6x4_h1': 0,
+  // '6x5_h1': 0,
+  // '6x6_h1': 0,
+
+  // H2 Double High — fill in as sliced
+  // '2x2_h2': 0,
+  // '2x6_h2': 0,
+  // '3x3_h2': 0,
+  // '3x4_h2': 0,
+  // '3x5_h2': 0,
+  // '3x6_h2': 0,
+  // '3x7_h2': 0,
+  // '4x2_h2': 0,
+  // '4x3_h2': 0,
+  // '4x4_h2': 0,
+  // '4x5_h2': 0,
+  // '4x6_h2': 0,
+  // '4x7_h2': 0,
+  // '5x2_h2': 0,
+  // '5x3_h2': 0,
+  // '5x4_h2': 0,
+  // '5x5_h2': 0,
+  // '5x6_h2': 0,
+  // '5x7_h2': 0,
+  // '6x3_h2': 0,
+  // '6x4_h2': 0,
+  // '6x6_h2': 0,
+
+  // Special / Mini
+  // '4x4_mini':    0,
+  // '3x4_mini_1':  0,
+  // '3x4_mini_2':  0,
+  // '5x6_stacked': 0,
+  // '3x5_stacked': 0,
+  // '2x4_mini_h2': 0,
+
+  // Baseplates
+  // 'baseplate_2x2': 0,
+  // 'baseplate_3x2': 0,
+  // 'baseplate_3x3': 0,
+  // 'baseplate_4x2': 0,
+  // 'baseplate_4x3': 0,
+  // 'baseplate_4x4': 0,
+  // 'baseplate_5x2': 0,
+  // 'baseplate_5x3': 0,
+  // 'baseplate_5x4': 0,
+  // 'baseplate_5x5': 0,
+  // 'baseplate_6x2': 0,
+  // 'baseplate_6x3': 0,
+  // 'baseplate_6x4': 0,
+  // 'baseplate_6x6': 0,
+}
+
 // Note: naming convention is depth-first (e.g. "6×2" = 6 deep, 2 wide)
 function makeH1(depth: number, width: number): DrawerProfile {
   const id = `${depth}x${width}_h1`
@@ -105,6 +185,7 @@ function makeH1(depth: number, width: number): DrawerProfile {
     makerWorldProfileId: PROFILE_IDS[id]?.toString(),
     category: 'standard',
     color: '#3b82f6',
+    filamentGrams: FILAMENT_GRAMS[id],
   }
 }
 
@@ -121,6 +202,7 @@ function makeH2(depth: number, width: number): DrawerProfile {
     makerWorldProfileId: PROFILE_IDS[id]?.toString(),
     category: 'standard',
     color: '#6366f1',
+    filamentGrams: FILAMENT_GRAMS[id],
   }
 }
 
@@ -142,6 +224,7 @@ function makeSpecial(
     makerWorldProfileId: PROFILE_IDS[id]?.toString(),
     category: 'divided',
     color: '#8b5cf6',
+    filamentGrams: FILAMENT_GRAMS[id],
   }
 }
 
@@ -208,6 +291,7 @@ export const drawerCatalog: DrawerProfile[] = [
       makerWorldProfileId: PROFILE_IDS[id]?.toString(),
       category: 'baseplate' as const,
       color: '#10b981',
+      filamentGrams: FILAMENT_GRAMS[id],
     }
   }),
 ]

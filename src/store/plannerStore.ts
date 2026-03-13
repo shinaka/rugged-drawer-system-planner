@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { v4 as uuidv4 } from 'uuid'
-import type { DrawerProfile, Placement, PlannerState } from '../types'
+import type { DrawerProfile, FilamentEntry, Placement, PlannerState } from '../types'
 import { getProfile } from '../data/drawerCatalog'
 
 const MAX_HISTORY = 50
@@ -16,6 +16,7 @@ function pushHistory(history: Placement[][], historyIndex: number, newPlacements
 
 export const usePlannerStore = create<PlannerState>((set, get) => ({
   placements: [],
+  filamentData: {},
   selectedId: null,
   heldItem: null,
   ghostPosition: null,
@@ -119,6 +120,7 @@ export const usePlannerStore = create<PlannerState>((set, get) => ({
 
   setGhostPosition: (pos: [number, number, number] | null) => set({ ghostPosition: pos }),
   setGhostValid: (valid: boolean) => set({ ghostValid: valid }),
+  setFilamentData: (data: Record<string, FilamentEntry>) => set({ filamentData: data }),
 
   undo: () => {
     const { history, historyIndex } = get()

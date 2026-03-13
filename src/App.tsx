@@ -6,9 +6,12 @@ import PartsListPanel from './components/ui/PartsListPanel'
 import Viewport from './components/three/Viewport'
 import type { ViewportHandle } from './components/three/Viewport'
 import { usePlannerStore } from './store/plannerStore'
+import { useFilamentSheet } from './hooks/useFilamentSheet'
 import styles from './styles/app.module.css'
 
 export default function App() {
+  useFilamentSheet()
+
   const [leftWidth, setLeftWidth] = useState(() =>
     Number(localStorage.getItem('sidebar-left-width')) || 240
   )

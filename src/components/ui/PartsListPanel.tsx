@@ -6,6 +6,7 @@ import styles from './PartsListPanel.module.css'
 
 export default function PartsListPanel() {
   const placements = usePlannerStore(s => s.placements)
+  const filamentData = usePlannerStore(s => s.filamentData)
   const loadLayout = usePlannerStore(s => s.loadLayout)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -20,6 +21,26 @@ export default function PartsListPanel() {
     .sort((a, b) => a.profile.name.localeCompare(b.profile.name))
 
   const total = placements.length
+
+  // Prefer live sheet data, fall back to catalog values
+  function getGrams(profileId: string, fallback?: number) {
+    return filamentData[profileId]?.grams ?? fallback
+  }
+  function getHours(profileId: string) {
+    return filamentData[profileId]?.hours
+  }
+
+  const totalGrams = items.reduce((sum, { profile, count }) => {
+    const g = getGrams(profile.id, profile.filamentGrams)
+    return g != null ? sum + g * count : sum
+  }, 0)
+  const totalHours = items.reduce((sum, { profile, count }) => {
+    const h = getHours(profile.id)
+    return h != null ? sum + h * count : sum
+  }, 0)
+  const hasAnyGrams = items.some(({ profile }) => getGrams(profile.id, profile.filamentGrams) != null)
+  const allHaveGrams = items.length > 0 && items.every(({ profile }) => getGrams(profile.id, profile.filamentGrams) != null)
+  const hasAnyHours = items.some(({ profile }) => getHours(profile.id) != null)
 
   function handleExport() {
     const json = exportLayout(placements)
@@ -80,6 +101,9 @@ export default function PartsListPanel() {
               </div>
               <div className={styles.rowRight}>
                 <span className={styles.count}>×{count}</span>
+                {getGrams(profile.id, profile.filamentGrams) != null && (
+                  <span className={styles.grams}>~{Math.round(getGrams(profile.id, profile.filamentGrams)! * count)}g</span>
+                )}
                 <a
                   href={getMakerWorldUrl(profile)}
                   target="_blank"
@@ -101,6 +125,23 @@ export default function PartsListPanel() {
             <span className={styles.totalLabel}>Total items</span>
             <span className={styles.totalValue}>{total}</span>
           </div>
+          {hasAnyGrams && (
+            <div className={styles.total}>
+              <span className={styles.totalLabel}>
+                Est. filament{allHaveGrams ? '' : ' *'}
+              </span>
+              <span className={styles.totalValue}>~{Math.round(totalGrams)}g</span>
+            </div>
+          )}
+          {hasAnyHours && (
+            <div className={styles.total}>
+              <span className={styles.totalLabel}>Est. print time</span>
+              <span className={styles.totalValue}>~{totalHours.toFixed(1)}h</span>
+            </div>
+          )}
+          {hasAnyGrams && !allHaveGrams && (
+            <p className={styles.gramsNote}>* some items have no estimate yet</p>
+          )}
         </div>
       )}
     </div>
