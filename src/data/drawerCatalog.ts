@@ -66,110 +66,36 @@ const PROFILE_IDS: Record<string, number> = {
   '6x4_h2': 1706696,
   '6x6_h2': 1931612,
 
-  // Special / Mini / Multi-drawer
-  '4x4_mini':    845919,
+  // H2 additions
+  '2x4_h2': 1249382,
+
+  // Special / Multi-drawer
+  '4x4_h1':     845919, // same MakerWorld model as 4x4_mini (plate 1 of that file)
+  '4x4_mini':   845919,
   '3x4_mini_1':  751700,
   '3x4_mini_2':  751700,  // same profile set as mini_1
   '5x6_stacked': 2204290,
   '3x5_stacked': 2197232,
-  '2x4_mini_h2': 1249382,
 
   // Baseplates (all sizes share the same multi-plate profile)
   'baseplate_2x2': 755201,
-  'baseplate_3x2': 755201,
+  'baseplate_2x3': 755201,
+  'baseplate_2x4': 755201,
+  'baseplate_2x5': 755201,
+  'baseplate_2x6': 755201,
   'baseplate_3x3': 755201,
-  'baseplate_4x2': 755201,
-  'baseplate_4x3': 755201,
+  'baseplate_3x4': 755201,
+  'baseplate_3x5': 755201,
+  'baseplate_3x6': 755201,
   'baseplate_4x4': 755201,
-  'baseplate_5x2': 755201,
-  'baseplate_5x3': 755201,
-  'baseplate_5x4': 755201,
+  'baseplate_4x5': 755201,
+  'baseplate_4x6': 755201,
   'baseplate_5x5': 755201,
-  'baseplate_6x2': 755201,
-  'baseplate_6x3': 755201,
-  'baseplate_6x4': 755201,
-  'baseplate_6x6': 755201,
+  'baseplate_5x6': 755201,
 }
 
-// Filament estimates at Bambu 0.20mm standard profile (grams)
-// Fill in values as you slice each model. Missing entries are omitted from the UI.
-const FILAMENT_GRAMS: Record<string, number> = {
-  // H1 Standard — fill in as sliced
-  // '2x2_h1': 0,
-  // '2x3_h1': 0,
-  // '2x4_h1': 0,
-  // '2x5_h1': 0,
-  // '3x1_h1': 0,
-  // '3x2_h1': 0,
-  // '3x3_h1': 0,
-  // '3x5_h1': 0,
-  // '3x6_h1': 0,
-  // '4x1_h1': 0,
-  // '4x2_h1': 0,
-  // '4x3_h1': 0,
-  // '4x5_h1': 0,
-  // '4x6_h1': 0,
-  // '5x1_h1': 0,
-  // '5x2_h1': 0,
-  // '5x3_h1': 0,
-  // '5x4_h1': 0,
-  // '5x5_h1': 0,
-  // '5x6_h1': 0,
-  // '6x1_h1': 0,
-  // '6x2_h1': 0,
-  // '6x3_h1': 0,
-  // '6x4_h1': 0,
-  // '6x5_h1': 0,
-  // '6x6_h1': 0,
-
-  // H2 Double High — fill in as sliced
-  // '2x2_h2': 0,
-  // '2x6_h2': 0,
-  // '3x3_h2': 0,
-  // '3x4_h2': 0,
-  // '3x5_h2': 0,
-  // '3x6_h2': 0,
-  // '3x7_h2': 0,
-  // '4x2_h2': 0,
-  // '4x3_h2': 0,
-  // '4x4_h2': 0,
-  // '4x5_h2': 0,
-  // '4x6_h2': 0,
-  // '4x7_h2': 0,
-  // '5x2_h2': 0,
-  // '5x3_h2': 0,
-  // '5x4_h2': 0,
-  // '5x5_h2': 0,
-  // '5x6_h2': 0,
-  // '5x7_h2': 0,
-  // '6x3_h2': 0,
-  // '6x4_h2': 0,
-  // '6x6_h2': 0,
-
-  // Special / Mini
-  // '4x4_mini':    0,
-  // '3x4_mini_1':  0,
-  // '3x4_mini_2':  0,
-  // '5x6_stacked': 0,
-  // '3x5_stacked': 0,
-  // '2x4_mini_h2': 0,
-
-  // Baseplates
-  // 'baseplate_2x2': 0,
-  // 'baseplate_3x2': 0,
-  // 'baseplate_3x3': 0,
-  // 'baseplate_4x2': 0,
-  // 'baseplate_4x3': 0,
-  // 'baseplate_4x4': 0,
-  // 'baseplate_5x2': 0,
-  // 'baseplate_5x3': 0,
-  // 'baseplate_5x4': 0,
-  // 'baseplate_5x5': 0,
-  // 'baseplate_6x2': 0,
-  // 'baseplate_6x3': 0,
-  // 'baseplate_6x4': 0,
-  // 'baseplate_6x6': 0,
-}
+// Filament data injected at build time from filament_data_final.csv
+// Run scripts/slice_profiles.py to regenerate.
 
 // Note: naming convention is depth-first (e.g. "6×2" = 6 deep, 2 wide)
 function makeH1(depth: number, width: number): DrawerProfile {
@@ -185,7 +111,7 @@ function makeH1(depth: number, width: number): DrawerProfile {
     makerWorldProfileId: PROFILE_IDS[id]?.toString(),
     category: 'standard',
     color: '#3b82f6',
-    filamentGrams: FILAMENT_GRAMS[id],
+    filamentGrams: __FILAMENT_DATA__[id]?.grams,
   }
 }
 
@@ -202,7 +128,7 @@ function makeH2(depth: number, width: number): DrawerProfile {
     makerWorldProfileId: PROFILE_IDS[id]?.toString(),
     category: 'standard',
     color: '#6366f1',
-    filamentGrams: FILAMENT_GRAMS[id],
+    filamentGrams: __FILAMENT_DATA__[id]?.grams,
   }
 }
 
@@ -224,7 +150,7 @@ function makeSpecial(
     makerWorldProfileId: PROFILE_IDS[id]?.toString(),
     category: 'divided',
     color: '#8b5cf6',
-    filamentGrams: FILAMENT_GRAMS[id],
+    filamentGrams: __FILAMENT_DATA__[id]?.grams,
   }
 }
 
@@ -236,11 +162,10 @@ export const drawerCatalog: DrawerProfile[] = [
 
   // 3×
   makeH1(3, 1), makeH1(3, 2), makeH1(3, 3), makeH1(3, 5), makeH1(3, 6),
-  // (3×4 exists only as mini variants — see Special section)
+  // (3×4 exists as Mini variants — see Special section)
 
   // 4×
-  makeH1(4, 1), makeH1(4, 2), makeH1(4, 3), makeH1(4, 5), makeH1(4, 6),
-  // (4×4 exists only as mini variant — see Special section)
+  makeH1(4, 1), makeH1(4, 2), makeH1(4, 3), makeH1(4, 4), makeH1(4, 5), makeH1(4, 6),
 
   // 5×
   makeH1(5, 1), makeH1(5, 2), makeH1(5, 3), makeH1(5, 4), makeH1(5, 5), makeH1(5, 6),
@@ -250,7 +175,7 @@ export const drawerCatalog: DrawerProfile[] = [
 
   // H2 Double High
   // 2×
-  makeH2(2, 2), makeH2(2, 6),
+  makeH2(2, 2), makeH2(2, 4), makeH2(2, 6),
 
   // 3×
   makeH2(3, 3), makeH2(3, 4), makeH2(3, 5), makeH2(3, 6), makeH2(3, 7),
@@ -264,20 +189,19 @@ export const drawerCatalog: DrawerProfile[] = [
   // 6×
   makeH2(6, 3), makeH2(6, 4), makeH2(6, 6),
 
-  // Special / Mini / Multi-drawer
+  // Special / Multi-drawer
   makeSpecial('4x4_mini',       '4×4 Mini (2 side-by-side)',          4, 4, H1_MM),
   makeSpecial('3x4_mini_1',     '3×4 Mini (1 drawer)',                3, 4, H1_MM),
   makeSpecial('3x4_mini_2',     '3×4 Mini (2 drawers)',               3, 4, H1_MM),
   makeSpecial('5x6_stacked',    '5×6 Double Stacked (4 drawers)',     5, 6, H2_MM),
   makeSpecial('3x5_stacked',    '3×5 Double Stacked (4 drawers)',     3, 5, H2_MM),
-  makeSpecial('2x4_mini_h2',    '2×4 Mini Double High (1 drawer)',    2, 4, H2_MM),
 
   // Baseplates
   ...[
-    [2, 2], [3, 2], [3, 3],
-    [4, 2], [4, 3], [4, 4],
-    [5, 2], [5, 3], [5, 4], [5, 5],
-    [6, 2], [6, 3], [6, 4], [6, 6],
+    [2, 2], [2, 3], [2, 4], [2, 5], [2, 6],
+    [3, 3], [3, 4], [3, 5], [3, 6],
+    [4, 4], [4, 5], [4, 6],
+    [5, 5], [5, 6],
   ].map(([depth, width]) => {
     const id = `baseplate_${depth}x${width}`
     return {
@@ -291,7 +215,7 @@ export const drawerCatalog: DrawerProfile[] = [
       makerWorldProfileId: PROFILE_IDS[id]?.toString(),
       category: 'baseplate' as const,
       color: '#10b981',
-      filamentGrams: FILAMENT_GRAMS[id],
+      filamentGrams: __FILAMENT_DATA__[id]?.grams,
     }
   }),
 ]

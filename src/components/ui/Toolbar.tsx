@@ -61,6 +61,15 @@ export default function Toolbar({ onResetCamera }: Props) {
         <ToolbarBtn onClick={() => setChangelogOpen(true)} title="Changelog">
           ◷ Changelog
         </ToolbarBtn>
+        <a
+          href="https://github.com/shinaka/rugged-drawer-system-planner"
+          target="_blank"
+          rel="noopener noreferrer"
+          className={styles.btn}
+          title="View on GitHub"
+        >
+          GitHub
+        </a>
 
         <div className={styles.spacer} />
 
