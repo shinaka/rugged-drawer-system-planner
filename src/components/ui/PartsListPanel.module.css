@@ -82,3 +82,15 @@
   @apply font-bold text-slate-200;
 }
 
+.summarySpoolIcon {
+  @apply inline-block mb-px align-middle opacity-60 ml-1;
+  height: 0.7rem;
+  width: auto;
+}
+
+.summaryClockIcon {
+  @apply inline-block mb-px align-middle opacity-60 ml-1;
+  height: 0.9rem;
+  width: auto;
+}
+

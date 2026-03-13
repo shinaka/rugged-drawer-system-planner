@@ -1,4 +1,4 @@
-import { useRef, useCallback, forwardRef, useImperativeHandle } from 'react'
+import { useRef, useCallback, forwardRef, useImperativeHandle, useEffect } from 'react'
 import { Canvas, useThree } from '@react-three/fiber'
 import { OrbitControls } from '@react-three/drei'
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib'
@@ -8,7 +8,6 @@ import { useSnapPosition } from '../../hooks/useSnap'
 import GridPlane from './GridPlane'
 import GhostPreview from './GhostPreview'
 import PlacedItem from './PlacedItem'
-import { useEffect } from 'react'
 
 export interface ViewportHandle {
   resetCamera: () => void

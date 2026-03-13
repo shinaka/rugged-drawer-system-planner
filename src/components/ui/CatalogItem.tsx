@@ -1,5 +1,6 @@
 import type { DrawerProfile } from '../../types'
 import { usePlannerStore } from '../../store/plannerStore'
+import { SpoolIcon, ClockIcon } from './Icons'
 import styles from './CatalogItem.module.css'
 
 interface Props {
@@ -15,7 +16,11 @@ const HEIGHT_BADGE: Record<string, string> = {
 export default function CatalogItem({ profile }: Props) {
   const setHeldItem = usePlannerStore(s => s.setHeldItem)
   const heldItem = usePlannerStore(s => s.heldItem)
+  const filamentData = usePlannerStore(s => s.filamentData)
   const isHeld = heldItem?.id === profile.id
+
+  const grams = filamentData[profile.id]?.grams ?? profile.filamentGrams
+  const hours = filamentData[profile.id]?.hours
 
   function handleMouseDown(e: React.MouseEvent) {
     const startX = e.clientX
@@ -57,6 +62,12 @@ export default function CatalogItem({ profile }: Props) {
       </div>
       <div className={styles.dims}>
         {profile.gridDepth * 42}×{profile.gridWidth * 42}mm · {profile.heightMm}mm tall
+        {grams != null && (
+          <> · <SpoolIcon className={styles.spoolIcon} />~{Math.round(grams)}g</>
+        )}
+        {hours != null && (
+          <> · <ClockIcon className={styles.metaIcon} />{Number(hours).toFixed(2).replace(/\.?0+$/, '')}h</>
+        )}
       </div>
     </button>
   )

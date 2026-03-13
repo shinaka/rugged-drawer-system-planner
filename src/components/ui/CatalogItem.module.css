@@ -30,3 +30,15 @@
 .dims {
   @apply mt-0.5 text-xs text-slate-500;
 }
+
+.metaIcon {
+  @apply inline-block mb-px align-middle opacity-70;
+  width: 0.8rem;
+  height: 0.8rem;
+}
+
+.spoolIcon {
+  @apply inline-block mb-px align-middle opacity-70;
+  height: 0.6rem;
+  width: calc(0.6rem * 15.6695 / 10.2788); /* preserve SVG aspect ratio */
+}

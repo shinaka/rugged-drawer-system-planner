@@ -2,6 +2,7 @@ import { useRef } from 'react'
 import { usePlannerStore } from '../../store/plannerStore'
 import { drawerCatalog, getMakerWorldUrl } from '../../data/drawerCatalog'
 import { exportLayout, importLayout, downloadJson } from '../../utils/export'
+import { SpoolIcon, ClockIcon } from './Icons'
 import styles from './PartsListPanel.module.css'
 
 export default function PartsListPanel() {
@@ -127,18 +128,17 @@ export default function PartsListPanel() {
           </div>
           {hasAnyGrams && (
             <div className={styles.total}>
-              <span className={styles.totalLabel}>
-                Est. filament{allHaveGrams ? '' : ' *'}
-              </span>
-              <span className={styles.totalValue}>~{Math.round(totalGrams)}g</span>
+              <span className={styles.totalLabel}>Est. filament{allHaveGrams ? '' : ' *'}</span>
+              <span className={styles.totalValue}><SpoolIcon className={styles.summarySpoolIcon} /> ~{Math.round(totalGrams)}g</span>
             </div>
           )}
           {hasAnyHours && (
             <div className={styles.total}>
               <span className={styles.totalLabel}>Est. print time</span>
-              <span className={styles.totalValue}>~{totalHours.toFixed(1)}h</span>
+              <span className={styles.totalValue}><ClockIcon className={styles.summaryClockIcon} /> ~{totalHours.toFixed(1)}h</span>
             </div>
           )}
+
           {hasAnyGrams && !allHaveGrams && (
             <p className={styles.gramsNote}>* some items have no estimate yet</p>
           )}
