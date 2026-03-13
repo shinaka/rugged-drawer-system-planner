@@ -26,6 +26,7 @@ export default function PlacedItem({ placement, orbitRef, gizmoDraggingRef }: Pr
   const heldItem = usePlannerStore(s => s.heldItem)
   const selectPlacement = usePlannerStore(s => s.selectPlacement)
   const movePlacement = usePlannerStore(s => s.movePlacement)
+  const duplicatePlacement = usePlannerStore(s => s.duplicatePlacement)
 
   const profile = getProfile(placement.profileId)
   if (!profile) return null
@@ -44,6 +45,15 @@ export default function PlacedItem({ placement, orbitRef, gizmoDraggingRef }: Pr
   // Refs for values read inside event callbacks — avoids stale closures
   const dragValidRef = useRef(true)
   const dragSnappedPosRef = useRef<[number, number, number]>([...placement.position])
+  const shiftHeldRef = useRef(false)
+
+  useEffect(() => {
+    const down = (e: KeyboardEvent) => { if (e.key === 'Shift') shiftHeldRef.current = true }
+    const up   = (e: KeyboardEvent) => { if (e.key === 'Shift') shiftHeldRef.current = false }
+    window.addEventListener('keydown', down)
+    window.addEventListener('keyup', up)
+    return () => { window.removeEventListener('keydown', down); window.removeEventListener('keyup', up) }
+  }, [])
 
   // Keep the THREE.Group position in sync with placement.position (or workingPos) when not dragging
   const [px, py, pz] = placement.position
@@ -142,7 +152,11 @@ export default function PlacedItem({ placement, orbitRef, gizmoDraggingRef }: Pr
       Math.abs(snapped[2] - oz) > 0.5
 
     if (dragValidRef.current && moved) {
-      movePlacement(placement.id, snapped)
+      if (shiftHeldRef.current) {
+        duplicatePlacement(placement.id, snapped, placement.rotation)
+      } else {
+        movePlacement(placement.id, snapped)
+      }
       setWorkingPos(null)
     } else if (!dragValidRef.current) {
       setWorkingPos(snapped)

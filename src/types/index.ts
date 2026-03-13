@@ -31,6 +31,7 @@ export interface PlannerState {
 
   addPlacement: (profile: DrawerProfile, position: [number, number, number]) => void
   movePlacement: (id: string, position: [number, number, number]) => void
+  duplicatePlacement: (id: string, position: [number, number, number], rotation: 0 | 90 | 180 | 270) => void
   removePlacement: (id: string) => void
   selectPlacement: (id: string | null) => void
   rotateSelected: () => void

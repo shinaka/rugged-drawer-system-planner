@@ -26,11 +26,14 @@ function Scene({ controlsRef }: { controlsRef: React.RefObject<OrbitControlsImpl
 
   const heldItem = usePlannerStore(s => s.heldItem)
   const addPlacement = usePlannerStore(s => s.addPlacement)
+  const duplicatePlacement = usePlannerStore(s => s.duplicatePlacement)
   const selectPlacement = usePlannerStore(s => s.selectPlacement)
   const setGhostPosition = usePlannerStore(s => s.setGhostPosition)
   const setGhostValid = usePlannerStore(s => s.setGhostValid)
   const ghostPosition = usePlannerStore(s => s.ghostPosition)
   const ghostValid = usePlannerStore(s => s.ghostValid)
+  const ghostRotation = usePlannerStore(s => s.ghostRotation)
+  const movingId = usePlannerStore(s => s.movingId)
   const placements = usePlannerStore(s => s.placements)
 
   const getSnappedPosition = useSnapPosition()
@@ -64,12 +67,16 @@ function Scene({ controlsRef }: { controlsRef: React.RefObject<OrbitControlsImpl
     updateGhostFromPointer(event)
   }, [updateGhostFromPointer])
 
-  const handleClick = useCallback(() => {
+  const handleClick = useCallback((e: MouseEvent) => {
     if (!heldItem) return
     if (ghostPosition && ghostValid) {
-      addPlacement(heldItem, ghostPosition)
+      if (e.shiftKey && movingId) {
+        duplicatePlacement(movingId, ghostPosition, ghostRotation)
+      } else {
+        addPlacement(heldItem, ghostPosition)
+      }
     }
-  }, [heldItem, ghostPosition, ghostValid, addPlacement])
+  }, [heldItem, ghostPosition, ghostValid, addPlacement, duplicatePlacement, movingId, ghostRotation])
 
   const handlePointerLeave = useCallback(() => {
     setGhostPosition(null)

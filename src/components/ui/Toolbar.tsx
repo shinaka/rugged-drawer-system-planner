@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { usePlannerStore } from '../../store/plannerStore'
+import HelpModal from './HelpModal'
 import styles from './Toolbar.module.css'
 
 interface Props {
@@ -63,65 +64,8 @@ export default function Toolbar({ onResetCamera }: Props) {
         </ToolbarBtn>
       </div>
 
-      {helpOpen && (
-        <div className={styles.modalBackdrop} onClick={() => setHelpOpen(false)}>
-          <div className={styles.modal} onClick={e => e.stopPropagation()}>
-            <div className={styles.modalHeader}>
-              <span>Controls</span>
-              <button className={styles.modalClose} onClick={() => setHelpOpen(false)}>✕</button>
-            </div>
-
-            <div className={styles.modalBody}>
-              <div className={styles.controlsGrid}>
-                <div className={styles.controlsSection}>
-                  <div className={styles.sectionTitle}>Placing Items</div>
-                  <Row k="Click catalog item" v="Pick up to place" />
-                  <Row k="Click grid" v="Place item" />
-                  <Row k="R" v="Rotate held / selected item" />
-                  <Row k="Esc" v="Cancel placement" />
-                </div>
-
-                <div className={styles.controlsSection}>
-                  <div className={styles.sectionTitle}>Selection</div>
-                  <Row k="Click placed item" v="Select" />
-                  <Row k="Drag gizmo arrow" v="Move (snaps to grid / stack)" />
-                  <Row k="R" v="Rotate selected" />
-                  <Row k="Delete / Backspace" v="Remove selected" />
-                </div>
-
-                <div className={styles.controlsSection}>
-                  <div className={styles.sectionTitle}>Camera</div>
-                  <Row k="Left drag" v="Orbit" />
-                  <Row k="Right drag / Middle drag" v="Pan" />
-                  <Row k="Scroll" v="Zoom" />
-                  <Row k="H" v="Reset view" />
-                </div>
-
-                <div className={styles.controlsSection}>
-                  <div className={styles.sectionTitle}>History</div>
-                  <Row k="Ctrl+Z" v="Undo" />
-                  <Row k="Ctrl+Y / Ctrl+Shift+Z" v="Redo" />
-                </div>
-              </div>
-
-              <div className={styles.modalNote}>
-                Clicking <strong>Print Profile</strong> links will select the correct print profile on MakerWorld.
-                You may need to expand the profile list on the page to see it selected.
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      {helpOpen && <HelpModal onClose={() => setHelpOpen(false)} />}
     </>
-  )
-}
-
-function Row({ k, v }: { k: string; v: string }) {
-  return (
-    <div className={styles.controlRow}>
-      <kbd className={styles.controlKey}>{k}</kbd>
-      <span className={styles.controlValue}>{v}</span>
-    </div>
   )
 }
 

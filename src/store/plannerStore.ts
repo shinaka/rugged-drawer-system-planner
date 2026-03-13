@@ -48,6 +48,23 @@ export const usePlannerStore = create<PlannerState>((set, get) => ({
     set({ placements: newPlacements, ...pushHistory(history, historyIndex, newPlacements) })
   },
 
+  duplicatePlacement: (id: string, position: [number, number, number], rotation: 0 | 90 | 180 | 270) => {
+    const { placements, history, historyIndex } = get()
+    const original = placements.find(p => p.id === id)
+    if (!original) return
+    const newPlacement: Placement = { ...original, id: uuidv4(), position, rotation }
+    const newPlacements = [...placements, newPlacement]
+    set({
+      placements: newPlacements,
+      ...pushHistory(history, historyIndex, newPlacements),
+      selectedId: newPlacement.id,
+      heldItem: null,
+      ghostPosition: null,
+      ghostRotation: 0,
+      movingId: null,
+    })
+  },
+
   removePlacement: (id: string) => {
     const { placements, history, historyIndex } = get()
     const newPlacements = placements.filter(p => p.id !== id)
