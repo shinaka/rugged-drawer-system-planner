@@ -39,3 +39,28 @@ export function deleteSave(name: string): void {
 export function saveExists(name: string): boolean {
   return name in readAll()
 }
+
+// ── Version tracking ──────────────────────────────────────────────────────────
+
+const VERSION_KEY = 'rdp-last-seen-version'
+
+export function getLastSeenVersion(): string | null {
+  return localStorage.getItem(VERSION_KEY)
+}
+
+export function setLastSeenVersion(version: string): void {
+  localStorage.setItem(VERSION_KEY, version)
+}
+
+/** Returns true if a is strictly newer than b (semver, strips leading 'v'). */
+export function isVersionNewer(a: string, b: string): boolean {
+  const pa = a.replace(/^v/, '').split('.').map(Number)
+  const pb = b.replace(/^v/, '').split('.').map(Number)
+  for (let i = 0; i < Math.max(pa.length, pb.length); i++) {
+    const na = pa[i] ?? 0
+    const nb = pb[i] ?? 0
+    if (na > nb) return true
+    if (na < nb) return false
+  }
+  return false
+}

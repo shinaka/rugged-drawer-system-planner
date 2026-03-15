@@ -23,3 +23,7 @@
   content: '·';
   @apply absolute left-0 text-slate-600;
 }
+
+.empty {
+  @apply text-sm text-slate-500 text-center py-4;
+}

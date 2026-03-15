@@ -1,5 +1,7 @@
 import { useRef, useEffect, useCallback, useState } from 'react'
 import { version } from '../package.json'
+import { getLastSeenVersion, setLastSeenVersion, isVersionNewer } from './utils/localStorage'
+import ChangelogModal from './components/ui/ChangelogModal'
 import Toolbar from './components/ui/Toolbar'
 import CatalogPanel from './components/ui/CatalogPanel'
 import PartsListPanel from './components/ui/PartsListPanel'
@@ -111,6 +113,28 @@ export default function App() {
 
   const isMoving = !!movingId
 
+  // What's New: show on launch if version has advanced since last visit
+  const [whatsNewSince, setWhatsNewSince] = useState<string | null | false>(false) // false = not yet checked
+  useEffect(() => {
+    const last = getLastSeenVersion()
+    if (last === null) {
+      // First ever visit — show only the latest entry (pass a fake "since" = second entry's version)
+      const entries: { version: string }[] = __CHANGELOG__
+      const since = entries.length > 1 ? entries[1].version : null
+      setWhatsNewSince(since ?? null)
+    } else if (isVersionNewer(version, last)) {
+      // Returning user who missed some versions
+      setWhatsNewSince(last)
+    } else {
+      setWhatsNewSince(null) // up to date, don't show
+    }
+  }, [])
+
+  function handleWhatsNewClose() {
+    setLastSeenVersion(version)
+    setWhatsNewSince(null)
+  }
+
   return (
     <div className={styles.layout}>
       <Toolbar onResetCamera={handleResetCamera} />
@@ -195,6 +219,14 @@ export default function App() {
           </a>
         </span>
       </div>
+
+      {typeof whatsNewSince === 'string' && (
+        <ChangelogModal
+          sinceVersion={whatsNewSince || undefined}
+          isWhatsNew
+          onClose={handleWhatsNewClose}
+        />
+      )}
     </div>
   )
 }
