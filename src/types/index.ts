@@ -36,6 +36,8 @@ export interface PlannerState {
   pendingCloneId: string | null // ID of a shift-drag clone that isn't confirmed yet
   history: Placement[][]
   historyIndex: number
+  currentSetupName: string | null // name of the last-saved/loaded setup
+  isDirty: boolean                // true if placements changed since last save/load
 
   addPlacement: (profile: DrawerProfile, position: [number, number, number]) => void
   movePlacement: (id: string, position: [number, number, number]) => void
@@ -52,6 +54,9 @@ export interface PlannerState {
   setGhostValid: (valid: boolean) => void
   setFilamentData: (data: Record<string, FilamentEntry>) => void
   loadLayout: (placements: Placement[]) => void
+  newSetup: () => void
+  saveSetup: (name: string) => void
+  loadSetup: (name: string, placements: Placement[]) => void
   undo: () => void
   redo: () => void
   clearAll: () => void

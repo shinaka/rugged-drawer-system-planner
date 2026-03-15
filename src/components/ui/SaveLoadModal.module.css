@@ -1,0 +1,76 @@
+.backdrop {
+  @apply fixed inset-0 bg-black/60 flex items-center justify-center z-50;
+}
+
+.modal {
+  @apply bg-slate-900 border border-slate-700 rounded-lg shadow-2xl;
+  width: 440px;
+  max-width: 90vw;
+}
+
+.header {
+  @apply flex items-center justify-between px-5 py-3 border-b border-slate-700 text-sm font-semibold text-slate-200;
+}
+
+.close {
+  @apply text-slate-500 hover:text-slate-200 transition-colors text-xs px-1;
+}
+
+.body {
+  @apply px-5 py-4 flex flex-col gap-4;
+}
+
+.label {
+  @apply flex flex-col gap-2 text-xs font-medium text-slate-400;
+}
+
+.input {
+  @apply bg-slate-800 border border-slate-600 rounded px-3 py-2 text-sm text-slate-100
+         placeholder-slate-500 focus:outline-none focus:border-blue-500 transition-colors;
+}
+
+.warning {
+  @apply text-xs text-amber-400;
+}
+
+.empty {
+  @apply text-sm text-slate-500 text-center py-4;
+}
+
+.saveList {
+  @apply flex flex-col gap-1 max-h-72 overflow-y-auto;
+}
+
+.saveRow {
+  @apply flex items-stretch gap-1;
+}
+
+.saveLoad {
+  @apply flex-1 flex flex-col items-start gap-0.5 px-3 py-2.5 rounded
+         bg-slate-800 hover:bg-slate-700 transition-colors text-left;
+}
+
+.saveName {
+  @apply text-sm font-medium text-slate-100;
+}
+
+.saveMeta {
+  @apply text-xs text-slate-500;
+}
+
+.saveDelete {
+  @apply px-2.5 rounded text-slate-600 hover:text-red-400 hover:bg-slate-800 transition-colors text-xs;
+}
+
+.actions {
+  @apply flex justify-end gap-2 pt-1;
+}
+
+.btnPrimary {
+  @apply px-4 py-1.5 rounded bg-blue-600 hover:bg-blue-500 disabled:opacity-40 disabled:cursor-not-allowed
+         text-sm font-medium text-white transition-colors;
+}
+
+.btnSecondary {
+  @apply px-4 py-1.5 rounded bg-slate-700 hover:bg-slate-600 text-sm font-medium text-slate-200 transition-colors;
+}

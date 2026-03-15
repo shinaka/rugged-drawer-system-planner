@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import { v4 as uuidv4 } from 'uuid'
 import type { DrawerProfile, FilamentEntry, Placement, PlannerState } from '../types'
 import { getProfile } from '../data/drawerCatalog'
+import { writeSave, listSaves } from '../utils/localStorage'
 
 const MAX_HISTORY = 50
 
@@ -26,6 +27,8 @@ export const usePlannerStore = create<PlannerState>((set, get) => ({
   pendingCloneId: null,
   history: [[]],
   historyIndex: 0,
+  currentSetupName: null,
+  isDirty: false,
 
   addPlacement: (profile: DrawerProfile, position: [number, number, number]) => {
     const { placements, history, historyIndex, movingId, ghostRotation } = get()
@@ -41,13 +44,14 @@ export const usePlannerStore = create<PlannerState>((set, get) => ({
       ghostPosition: null,
       ghostRotation: 0,
       movingId: null,
+      isDirty: true,
     })
   },
 
   movePlacement: (id: string, position: [number, number, number]) => {
     const { placements, history, historyIndex } = get()
     const newPlacements = placements.map(p => p.id === id ? { ...p, position } : p)
-    set({ placements: newPlacements, ...pushHistory(history, historyIndex, newPlacements) })
+    set({ placements: newPlacements, ...pushHistory(history, historyIndex, newPlacements), isDirty: true })
   },
 
   // Silently inserts a copy at the same position/rotation — used by gizmo shift-drag.
@@ -58,7 +62,7 @@ export const usePlannerStore = create<PlannerState>((set, get) => ({
     if (!original) return
     const copy = { ...original, id: newId }
     const newPlacements = [...placements, copy]
-    set({ placements: newPlacements, ...pushHistory(history, historyIndex, newPlacements), pendingCloneId: newId })
+    set({ placements: newPlacements, ...pushHistory(history, historyIndex, newPlacements), pendingCloneId: newId, isDirty: true })
   },
 
   removePlacement: (id: string) => {
@@ -68,6 +72,7 @@ export const usePlannerStore = create<PlannerState>((set, get) => ({
       placements: newPlacements,
       ...pushHistory(history, historyIndex, newPlacements),
       selectedId: null,
+      isDirty: true,
       ...(pendingCloneId === id ? { pendingCloneId: null } : {}),
     })
   },
@@ -80,6 +85,7 @@ export const usePlannerStore = create<PlannerState>((set, get) => ({
     set({
       placements: newPlacements,
       ...pushHistory(history, historyIndex, newPlacements),
+      isDirty: true,
       ...(pendingCloneId === id ? { pendingCloneId: null } : {}),
     })
   },
@@ -96,7 +102,7 @@ export const usePlannerStore = create<PlannerState>((set, get) => ({
       if (p.id !== selectedId) return p
       return { ...p, rotation: rotations[(rotations.indexOf(p.rotation) + 1) % 4] }
     })
-    set({ placements: newPlacements, ...pushHistory(history, historyIndex, newPlacements) })
+    set({ placements: newPlacements, ...pushHistory(history, historyIndex, newPlacements), isDirty: true })
   },
 
   rotateGhost: () => {
@@ -125,13 +131,13 @@ export const usePlannerStore = create<PlannerState>((set, get) => ({
   undo: () => {
     const { history, historyIndex } = get()
     if (historyIndex <= 0) return
-    set({ placements: history[historyIndex - 1] ?? [], historyIndex: historyIndex - 1, selectedId: null, pendingCloneId: null })
+    set({ placements: history[historyIndex - 1] ?? [], historyIndex: historyIndex - 1, selectedId: null, pendingCloneId: null, isDirty: true })
   },
 
   redo: () => {
     const { history, historyIndex } = get()
     if (historyIndex >= history.length - 1) return
-    set({ placements: history[historyIndex + 1] ?? [], historyIndex: historyIndex + 1, selectedId: null, pendingCloneId: null })
+    set({ placements: history[historyIndex + 1] ?? [], historyIndex: historyIndex + 1, selectedId: null, pendingCloneId: null, isDirty: true })
   },
 
   loadLayout: (placements: Placement[]) => {
@@ -140,6 +146,30 @@ export const usePlannerStore = create<PlannerState>((set, get) => ({
       placements,
       selectedId: null, heldItem: null, ghostPosition: null, ghostRotation: 0, movingId: null, pendingCloneId: null,
       ...pushHistory(history, historyIndex, placements),
+      isDirty: true,
+    })
+  },
+
+  newSetup: () => {
+    set({
+      placements: [], selectedId: null, heldItem: null, ghostPosition: null, ghostRotation: 0,
+      movingId: null, pendingCloneId: null, history: [[]], historyIndex: 0,
+      currentSetupName: null, isDirty: false,
+    })
+  },
+
+  saveSetup: (name: string) => {
+    const { placements } = get()
+    writeSave(name, placements)
+    set({ currentSetupName: name, isDirty: false })
+  },
+
+  loadSetup: (name: string, placements: Placement[]) => {
+    set({
+      placements,
+      selectedId: null, heldItem: null, ghostPosition: null, ghostRotation: 0, movingId: null, pendingCloneId: null,
+      history: [placements], historyIndex: 0,
+      currentSetupName: name, isDirty: false,
     })
   },
 
@@ -148,6 +178,10 @@ export const usePlannerStore = create<PlannerState>((set, get) => ({
     set({
       placements: [], selectedId: null, heldItem: null, ghostPosition: null, ghostRotation: 0, movingId: null, pendingCloneId: null,
       ...pushHistory(history, historyIndex, []),
+      isDirty: true,
     })
   },
 }))
+
+// Re-export listSaves so consumers don't need to import from two places
+export { listSaves }
