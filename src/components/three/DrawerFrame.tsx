@@ -2,6 +2,8 @@ import { useMemo } from 'react'
 import { RoundedBox } from '@react-three/drei'
 import type { DrawerProfile } from '../../types'
 import { GRID_UNIT } from '../../utils/grid'
+import { getDrawerLayout } from '../../utils/drawers'
+import { FrameShell, SlidingDrawer } from './DrawerInterior'
 import * as THREE from 'three'
 
 interface Props {
@@ -12,6 +14,8 @@ interface Props {
   ghost?: boolean
   valid?: boolean
   onClick?: () => void
+  openCells?: readonly number[]
+  onDrawerClick?: (cell: number) => void
 }
 
 // Shared textures
@@ -78,18 +82,8 @@ function buildTopTexture(): THREE.CanvasTexture {
 
 const BASE_MESH_TEX = buildMeshTexture()
 const BASE_TOP_TEX = buildTopTexture()
-
-// Drawer cell layout
-
-function getDrawerLayout(profileId: string): { columns: number; rows: number } {
-  switch (profileId) {
-    case '4x4_mini':    return { columns: 2, rows: 1 }
-    case '3x4_mini_2':  return { columns: 2, rows: 1 }
-    case '5x6_stacked': return { columns: 2, rows: 2 }
-    case '3x5_stacked': return { columns: 2, rows: 2 }
-    default:            return { columns: 1, rows: 1 }
-  }
-}
+// Pointer events pass through the decorative handles to the solid drawer front.
+const ignoreRaycast: THREE.Mesh['raycast'] = () => {}
 
 // Component
 
@@ -101,6 +95,8 @@ export default function DrawerFrame({
   ghost = false,
   valid = true,
   onClick,
+  openCells = [],
+  onDrawerClick,
 }: Props) {
   const w = profile.gridWidth * GRID_UNIT
   const d = profile.gridDepth * GRID_UNIT
@@ -147,25 +143,29 @@ export default function DrawerFrame({
       onClick={onClick ? e => { e.stopPropagation(); onClick() } : undefined}
     >
       {/* ── Main body ── */}
-      <RoundedBox
-        args={[w - 2, h - 2, d - 2]}
-        radius={3}
-        smoothness={3}
-        castShadow={!ghost}
-        receiveShadow={!ghost}
-      >
-        <meshStandardMaterial
-          color={ghost ? ghostColor : '#3e3f46'}
-          transparent={ghost}
-          opacity={opacity}
-          roughness={0.85}
-          metalness={0.05}
-          side={ghost ? THREE.DoubleSide : THREE.FrontSide}
-        />
-      </RoundedBox>
+      {(ghost || isBaseplate) ? (
+        <RoundedBox
+          args={[w - 2, h - 2, d - 2]}
+          radius={3}
+          smoothness={3}
+          castShadow={!ghost}
+          receiveShadow={!ghost}
+        >
+          <meshStandardMaterial
+            color={ghost ? ghostColor : '#3e3f46'}
+            transparent={ghost}
+            opacity={opacity}
+            roughness={0.85}
+            metalness={0.05}
+            side={ghost ? THREE.DoubleSide : THREE.FrontSide}
+          />
+        </RoundedBox>
+      ) : (
+        <FrameShell width={w} height={h} depth={d} columns={columns} rows={rows} />
+      )}
 
       {/* ── Front face: diamond mesh texture ── */}
-      {!ghost && (
+      {!ghost && isBaseplate && (
         <mesh position={[0, 0, frontZ + 0.5]}>
           <planeGeometry args={[w - 6, h - 6]} />
           <meshStandardMaterial map={frontTex} roughness={0.88} metalness={0.06} />
@@ -207,31 +207,40 @@ export default function DrawerFrame({
         // Handle bar sits at the bottom edge of the notch
         const barY = -(cellHandleH / 2) + (cellHandleBarH / 2)
         return (
-          <group key={`cell-${col}-${row}`} position={[cx, cy, 0]}>
-            {/* Recess / notch cutout */}
-            {!ghost && (
-              <mesh position={[0, 0, frontZ + 2]}>
-                <boxGeometry args={[cellHandleW, cellHandleH, 3]} />
-                <meshStandardMaterial color="#0a0a0e" roughness={1} metalness={0} />
-              </mesh>
-            )}
-            {/* Orange handle bar — bottom of notch */}
-            <group position={[0, ghost ? 0 : barY, ghost ? d / 2 : frontZ + 3.2]}>
-              <RoundedBox
-                args={[ghost ? cellHandleW * 0.6 : cellHandleW * 0.9, cellHandleBarH, 2.5]}
-                radius={cellHandleBarH * 0.45}
-                smoothness={3}
-              >
-                <meshStandardMaterial
-                  color="#f97316"
-                  transparent={ghost}
-                  opacity={ghost ? opacity : 1}
-                  roughness={0.35}
-                  metalness={0.2}
-                />
-              </RoundedBox>
+          <SlidingDrawer
+            key={`cell-${col}-${row}`}
+            width={cellW} height={cellH} depth={d}
+            x={cx} y={cy - notchYOffset}
+            open={openCells.includes(i)} ghost={ghost} texture={frontTex}
+            onToggle={onDrawerClick ? () => onDrawerClick(i) : undefined}
+          >
+            <group position={[0, notchYOffset, 0]}>
+              {/* Recess / notch cutout */}
+              {!ghost && (
+                <mesh position={[0, 0, frontZ + 2]} raycast={ignoreRaycast}>
+                  <boxGeometry args={[cellHandleW, cellHandleH, 3]} />
+                  <meshStandardMaterial color="#0a0a0e" roughness={1} metalness={0} />
+                </mesh>
+              )}
+              {/* Orange handle bar — bottom of notch */}
+              <group position={[0, ghost ? 0 : barY, ghost ? d / 2 : frontZ + 3.2]}>
+                <RoundedBox
+                  raycast={ignoreRaycast}
+                  args={[ghost ? cellHandleW * 0.6 : cellHandleW * 0.9, cellHandleBarH, 2.5]}
+                  radius={cellHandleBarH * 0.45}
+                  smoothness={3}
+                >
+                  <meshStandardMaterial
+                    color="#f97316"
+                    transparent={ghost}
+                    opacity={ghost ? opacity : 1}
+                    roughness={0.35}
+                    metalness={0.2}
+                  />
+                </RoundedBox>
+              </group>
             </group>
-          </group>
+          </SlidingDrawer>
         )
       })}
 

@@ -26,6 +26,7 @@ export interface FilamentEntry {
 
 export interface PlannerState {
   placements: Placement[]
+  openDrawers: Record<string, number[]>
   filamentData: Record<string, FilamentEntry> // fetched from Google Sheet
   selectedId: string | null
   heldItem: DrawerProfile | null
@@ -46,6 +47,8 @@ export interface PlannerState {
   discardPlacement: (id: string) => void
   setPendingCloneId: (id: string | null) => void
   selectPlacement: (id: string | null) => void
+  toggleDrawer: (id: string, cell?: number) => void
+  toggleAllDrawers: () => void
   rotateSelected: () => void
   rotateGhost: () => void
   startMove: (id: string) => void

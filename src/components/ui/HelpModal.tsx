@@ -30,6 +30,9 @@ export default function HelpModal({ onClose }: Props) {
               <Row k="Drag gizmo arrow" v="Move (snaps to grid / stack)" />
               <Row k="Shift + drag gizmo" v="Duplicate (instead of move)" />
               <Row k="R" v="Rotate selected" />
+              <Row k="Click drawer front" v="Open or close that drawer (schematic interior)" />
+              <Row k="Open / Close All Drawers" v="Toggle all drawers in the layout" />
+              <Row k="O" v="Open or close all drawers in the layout" />
               <Row k="Delete / Backspace" v="Remove selected" />
             </div>
 

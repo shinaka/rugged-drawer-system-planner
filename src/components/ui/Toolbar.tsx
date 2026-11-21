@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import { usePlannerStore } from '../../store/plannerStore'
+import { getProfile } from '../../data/drawerCatalog'
+import { areAllDrawersOpen, getDrawerCount } from '../../utils/drawers'
 import HelpModal from './HelpModal'
 import ChangelogModal from './ChangelogModal'
 import SaveModal from './SaveModal'
@@ -31,6 +33,12 @@ export default function Toolbar({ onResetCamera }: Props) {
   const currentSetupName = usePlannerStore(s => s.currentSetupName)
   const isDirty = usePlannerStore(s => s.isDirty)
   const placements = usePlannerStore(s => s.placements)
+  const openDrawers = usePlannerStore(s => s.openDrawers)
+  const heldItem = usePlannerStore(s => s.heldItem)
+  const pendingCloneId = usePlannerStore(s => s.pendingCloneId)
+  const toggleAllDrawers = usePlannerStore(s => s.toggleAllDrawers)
+  const allOpen = areAllDrawersOpen(placements, openDrawers, pendingCloneId)
+  const hasDrawers = placements.some(p => p.id !== pendingCloneId && getDrawerCount(getProfile(p.profileId)) > 0)
 
   const canUndo = historyIndex > 0
   const canRedo = historyIndex < history.length - 1
@@ -103,6 +111,15 @@ export default function Toolbar({ onResetCamera }: Props) {
         <ToolbarBtn onClick={rotateSelected} disabled={!selectedId} title="Rotate (R)">
           ⟳ Rotate
         </ToolbarBtn>
+        <ToolbarBtn
+          onClick={toggleAllDrawers}
+          disabled={!hasDrawers || !!heldItem}
+          title={allOpen ? 'Close all drawers' : 'Open all drawers'}
+          highlight={allOpen}
+          pressed={allOpen}
+        >
+          {allOpen ? 'Close All Drawers' : 'Open All Drawers'}
+        </ToolbarBtn>
         <ToolbarBtn onClick={() => { if (selectedId) removePlacement(selectedId) }} disabled={!selectedId} title="Delete (Del)" danger>
           ✕ Delete
         </ToolbarBtn>
@@ -159,13 +176,14 @@ interface BtnProps {
   danger?: boolean
   highlight?: boolean
   title?: string
+  pressed?: boolean
   children: React.ReactNode
 }
 
-function ToolbarBtn({ onClick, disabled, danger, highlight, title, children }: BtnProps) {
+function ToolbarBtn({ onClick, disabled, danger, highlight, title, pressed, children }: BtnProps) {
   const cls = danger ? styles.btnDanger : highlight ? styles.btnHighlight : styles.btn
   return (
-    <button onClick={onClick} disabled={disabled} title={title} className={cls}>
+    <button onClick={onClick} disabled={disabled} title={title} className={cls} aria-pressed={pressed}>
       {children}
     </button>
   )

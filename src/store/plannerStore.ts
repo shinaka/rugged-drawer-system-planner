@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import { v4 as uuidv4 } from 'uuid'
 import type { DrawerProfile, FilamentEntry, Placement, PlannerState } from '../types'
 import { getProfile } from '../data/drawerCatalog'
+import { areAllDrawersOpen, getDrawerCount } from '../utils/drawers'
 import { writeSave, listSaves } from '../utils/localStorage'
 
 const MAX_HISTORY = 50
@@ -17,6 +18,7 @@ function pushHistory(history: Placement[][], historyIndex: number, newPlacements
 
 export const usePlannerStore = create<PlannerState>((set, get) => ({
   placements: [],
+  openDrawers: {},
   filamentData: {},
   selectedId: null,
   heldItem: null,
@@ -72,6 +74,7 @@ export const usePlannerStore = create<PlannerState>((set, get) => ({
       placements: newPlacements,
       ...pushHistory(history, historyIndex, newPlacements),
       selectedId: null,
+      openDrawers: {},
       isDirty: true,
       ...(pendingCloneId === id ? { pendingCloneId: null } : {}),
     })
@@ -84,6 +87,7 @@ export const usePlannerStore = create<PlannerState>((set, get) => ({
     const newPlacements = placements.filter(p => p.id !== id)
     set({
       placements: newPlacements,
+      openDrawers: {},
       ...pushHistory(history, historyIndex, newPlacements),
       isDirty: true,
       ...(pendingCloneId === id ? { pendingCloneId: null } : {}),
@@ -93,6 +97,33 @@ export const usePlannerStore = create<PlannerState>((set, get) => ({
   setPendingCloneId: (id: string | null) => set({ pendingCloneId: id }),
 
   selectPlacement: (id: string | null) => set({ selectedId: id }),
+
+  toggleDrawer: (id: string, cell?: number) => {
+    const { placements, openDrawers } = get()
+    const placement = placements.find(p => p.id === id)
+    const profile = placement && getProfile(placement.profileId)
+    if (!profile) return
+    const count = getDrawerCount(profile)
+    if (!count) return
+    if (cell != null && (!Number.isInteger(cell) || cell < 0 || cell >= count)) return
+    const current = openDrawers[id] ?? []
+    const next = cell == null
+      ? (current.length === count ? [] : Array.from({ length: count }, (_, i) => i))
+      : (current.includes(cell) ? current.filter(i => i !== cell) : [...current, cell])
+    set({ openDrawers: { ...openDrawers, [id]: next } })
+  },
+
+  toggleAllDrawers: () => {
+    const { placements, openDrawers, pendingCloneId } = get()
+    const close = areAllDrawersOpen(placements, openDrawers, pendingCloneId)
+    const next = { ...openDrawers }
+    for (const placement of placements) {
+      if (placement.id === pendingCloneId) continue
+      const count = getDrawerCount(getProfile(placement.profileId))
+      if (count) next[placement.id] = close ? [] : Array.from({ length: count }, (_, i) => i)
+    }
+    set({ openDrawers: next })
+  },
 
   rotateSelected: () => {
     const { placements, selectedId, history, historyIndex } = get()
@@ -117,7 +148,7 @@ export const usePlannerStore = create<PlannerState>((set, get) => ({
     if (!placement) return
     const profile = getProfile(placement.profileId)
     if (!profile) return
-    set({ heldItem: profile, ghostRotation: placement.rotation, movingId: id, selectedId: null, ghostPosition: null })
+    set({ openDrawers: {}, heldItem: profile, ghostRotation: placement.rotation, movingId: id, selectedId: null, ghostPosition: null })
   },
 
   setHeldItem: (item: DrawerProfile | null) => {
@@ -131,19 +162,20 @@ export const usePlannerStore = create<PlannerState>((set, get) => ({
   undo: () => {
     const { history, historyIndex } = get()
     if (historyIndex <= 0) return
-    set({ placements: history[historyIndex - 1] ?? [], historyIndex: historyIndex - 1, selectedId: null, pendingCloneId: null, isDirty: true })
+    set({ openDrawers: {}, placements: history[historyIndex - 1] ?? [], historyIndex: historyIndex - 1, selectedId: null, pendingCloneId: null, isDirty: true })
   },
 
   redo: () => {
     const { history, historyIndex } = get()
     if (historyIndex >= history.length - 1) return
-    set({ placements: history[historyIndex + 1] ?? [], historyIndex: historyIndex + 1, selectedId: null, pendingCloneId: null, isDirty: true })
+    set({ openDrawers: {}, placements: history[historyIndex + 1] ?? [], historyIndex: historyIndex + 1, selectedId: null, pendingCloneId: null, isDirty: true })
   },
 
   loadLayout: (placements: Placement[]) => {
     const { history, historyIndex } = get()
     set({
       placements,
+      openDrawers: {},
       selectedId: null, heldItem: null, ghostPosition: null, ghostRotation: 0, movingId: null, pendingCloneId: null,
       ...pushHistory(history, historyIndex, placements),
       isDirty: true,
@@ -152,7 +184,7 @@ export const usePlannerStore = create<PlannerState>((set, get) => ({
 
   newSetup: () => {
     set({
-      placements: [], selectedId: null, heldItem: null, ghostPosition: null, ghostRotation: 0,
+      placements: [], openDrawers: {}, selectedId: null, heldItem: null, ghostPosition: null, ghostRotation: 0,
       movingId: null, pendingCloneId: null, history: [[]], historyIndex: 0,
       currentSetupName: null, isDirty: false,
     })
@@ -167,6 +199,7 @@ export const usePlannerStore = create<PlannerState>((set, get) => ({
   loadSetup: (name: string, placements: Placement[]) => {
     set({
       placements,
+      openDrawers: {},
       selectedId: null, heldItem: null, ghostPosition: null, ghostRotation: 0, movingId: null, pendingCloneId: null,
       history: [placements], historyIndex: 0,
       currentSetupName: name, isDirty: false,
@@ -176,7 +209,7 @@ export const usePlannerStore = create<PlannerState>((set, get) => ({
   clearAll: () => {
     const { history, historyIndex } = get()
     set({
-      placements: [], selectedId: null, heldItem: null, ghostPosition: null, ghostRotation: 0, movingId: null, pendingCloneId: null,
+      placements: [], openDrawers: {}, selectedId: null, heldItem: null, ghostPosition: null, ghostRotation: 0, movingId: null, pendingCloneId: null,
       ...pushHistory(history, historyIndex, []),
       isDirty: true,
     })
