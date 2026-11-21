@@ -62,6 +62,7 @@ export default function App() {
   const removePlacement = usePlannerStore(s => s.removePlacement)
   const undo = usePlannerStore(s => s.undo)
   const redo = usePlannerStore(s => s.redo)
+  const toggleAllDrawers = usePlannerStore(s => s.toggleAllDrawers)
 
   const handleResetCamera = useCallback(() => {
     viewportRef.current?.resetCamera()
@@ -69,7 +70,8 @@ export default function App() {
 
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
-      if ((e.target as HTMLElement)?.tagName === 'INPUT') return
+      const target = e.target as HTMLElement
+      if (target?.matches('input, textarea, select') || target?.isContentEditable) return
 
       switch (e.key) {
         case 'Escape':
@@ -83,6 +85,12 @@ export default function App() {
         case 'g':
         case 'G':
           if (selectedId && !heldItem) startMove(selectedId)
+          break
+        case 'o':
+        case 'O':
+          if (!heldItem && !e.repeat && !e.ctrlKey && !e.metaKey && !e.altKey) {
+            toggleAllDrawers()
+          }
           break
         case 'Delete':
         case 'Backspace':
@@ -109,7 +117,7 @@ export default function App() {
 
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
-  }, [heldItem, selectedId, setHeldItem, rotateSelected, rotateGhost, startMove, removePlacement, handleResetCamera, undo, redo])
+  }, [heldItem, selectedId, setHeldItem, rotateSelected, rotateGhost, startMove, removePlacement, handleResetCamera, undo, redo, toggleAllDrawers])
 
   const isMoving = !!movingId
 

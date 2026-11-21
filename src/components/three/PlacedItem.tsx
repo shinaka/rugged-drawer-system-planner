@@ -23,6 +23,8 @@ function effectiveDims(gridW: number, gridD: number, rotation: 0 | 90 | 180 | 27
 }
 
 export default function PlacedItem({ placement, orbitRef, gizmoDraggingRef }: Props) {
+  const openCells = usePlannerStore(s => s.openDrawers[placement.id])
+  const toggleDrawer = usePlannerStore(s => s.toggleDrawer)
   const selectedId        = usePlannerStore(s => s.selectedId)
   const heldItem          = usePlannerStore(s => s.heldItem)
   const movingId          = usePlannerStore(s => s.movingId)
@@ -267,7 +269,11 @@ export default function PlacedItem({ placement, orbitRef, gizmoDraggingRef }: Pr
           selected={isSelected && !isDragging && workingPos === null && !isPendingClone}
           ghost={showAsGhost}
           valid={ghostValid}
+          openCells={showAsGhost || isPendingClone ? [] : openCells}
           onClick={handleClick}
+          onDrawerClick={!heldItem && !isPendingClone && !showAsGhost ? cell => {
+            if (!gizmoDraggingRef.current) toggleDrawer(placement.id, cell)
+          } : undefined}
         />
       </group>
 
