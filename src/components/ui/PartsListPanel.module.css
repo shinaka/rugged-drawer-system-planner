@@ -26,6 +26,26 @@
   @apply flex-1 overflow-y-auto px-3 pb-2 space-y-1;
 }
 
+.dimensions {
+  @apply mx-3 mb-3 p-3 rounded-lg border border-slate-700 bg-slate-950/50 flex-shrink-0;
+}
+
+.dimensionValues {
+  @apply mt-2 space-y-1;
+}
+
+.dimensionRow {
+  @apply flex flex-wrap items-baseline justify-between gap-x-2 text-xs text-slate-400;
+}
+
+.dimensionRow dd {
+  @apply font-semibold text-slate-100 tabular-nums;
+}
+
+.dimensionNote {
+  @apply mt-2 text-[10px] text-slate-500;
+}
+
 .emptyState {
   @apply text-xs text-slate-500 text-center pt-4;
 }
