@@ -2,6 +2,7 @@ import { useRef } from 'react'
 import { usePlannerStore } from '../../store/plannerStore'
 import { drawerCatalog, getMakerWorldUrl } from '../../data/drawerCatalog'
 import { exportLayout, importLayout, downloadJson } from '../../utils/export'
+import { getLayoutDimensions } from '../../utils/dimensions'
 import { SpoolIcon, ClockIcon } from './Icons'
 import styles from './PartsListPanel.module.css'
 
@@ -22,6 +23,7 @@ export default function PartsListPanel() {
     .sort((a, b) => a.profile.name.localeCompare(b.profile.name))
 
   const total = placements.length
+  const dimensions = getLayoutDimensions(placements)
 
   // Prefer live sheet data, fall back to catalog values
   function getGrams(profileId: string, fallback?: number) {
@@ -86,6 +88,31 @@ export default function PartsListPanel() {
           />
         </div>
       </div>
+
+      <section className={styles.dimensions} aria-label="Overall dimensions">
+        <h3 className={styles.title}>Overall dimensions</h3>
+        {dimensions ? (
+          <>
+            <dl className={styles.dimensionValues}>
+              <div className={styles.dimensionRow}>
+                <dt>Width (X)</dt>
+                <dd>{Number(dimensions.width.toFixed(1))} mm</dd>
+              </div>
+              <div className={styles.dimensionRow}>
+                <dt>Depth (Z)</dt>
+                <dd>{Number(dimensions.depth.toFixed(1))} mm</dd>
+              </div>
+              <div className={styles.dimensionRow}>
+                <dt>Height (Y)</dt>
+                <dd>{Number(dimensions.height.toFixed(1))} mm</dd>
+              </div>
+            </dl>
+            <p className={styles.dimensionNote}>Based on grid sizes. Includes gaps between items.</p>
+          </>
+        ) : (
+          <p className={styles.dimensionNote}>Place items to see the overall dimensions.</p>
+        )}
+      </section>
 
       <div className={styles.list}>
         {items.length === 0 ? (
